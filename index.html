@@ -1412,47 +1412,20 @@
                 maintenanceMode: false
             });
 
-            const [barangList, setBarangList] = useState(
-                Array.from({ length: 95 }, (_, i) => ({
-                    id: i + 1, no: i + 1,
-                    kode: `1.3.1.${String((i%5)+1)}`,
-                    register: String(i + 1).padStart(4, '0'),
-                    nama: i % 2 === 0 ? 'AC Split' : 'Laptop Asus ROG',
-                    merk: i % 2 === 0 ? 'LG' : 'Asus',
-                    tahun: 2021 + (i % 3),
-                    keadaan: i % 7 === 0 ? 'Rusak Berat' : (i % 5 === 0 ? 'Rusak Ringan' : 'Baik'),
-                    ruang: i % 2 === 0 ? 'Ruangan UMPEG' : 'Ruang Tata Usaha',
-                    keterangan: i % 2 === 0 ? 'Dipakai Staff IT' : 'Posisi di Meja Pelayanan',
-                    cekFisik: 'Belum',
-                    foto: '',
-                    status: 'Aktif',
-                    updateCount: 0
-                }))
-            );
+            const [barangList, setBarangList] = useState([]);
+                
 
-            const [ruanganList, setRuanganList] = useState([
-                { id: 1, no: 'R-001', nama: 'Ruangan UMPEG', pj: 'ERI PURWATI, S.Sos', jabatan: 'Kepala Sub Bag Umum dan Kepegawaian', nipPj: '19830505 201001 2 036' },
-                { id: 2, no: 'R-002', nama: 'Ruang Tata Usaha', pj: 'Ibu Siti', jabatan: 'Kasubag TU', nipPj: '19800101 200501 2 001' },
-                { id: 3, no: 'R-003', nama: 'Ruang IT', pj: 'Budi Santoso', jabatan: 'Kepala IT', nipPj: '19900202 201502 1 002' }
-            ]);
+            const [ruanganList, setRuanganList] = useState([]);
+                
 
-            const [aduanList, setAduanList] = useState(
-                Array.from({ length: 15 }, (_, i) => ({
-                    id: 1000 + i, kodeBarang: `12.01.${String((i%5)+1).padStart(3, '0')}`, noRegister: '0001', namaBarang: i % 2 === 0 ? 'AC Daikin 1 PK' : 'Laptop Asus ROG',
-                    tanggal: '2026-09-10', keterangan: i % 3 === 0 ? 'AC Tidak Dingin' : 'Keyboard rusak', status: i < 5 ? 'Menunggu' : 'Proses'
-                }))
-            );
+            const [aduanList, setAduanList] = useState([]);
+                
 
-            const [pemeliharaanList, setPemeliharaanList] = useState(
-                Array.from({ length: 5 }, (_, i) => ({
-                    id: 2000 + i, namaBarang: i % 2 === 0 ? 'Printer Epson' : 'AC Panasonic', kode: '12.01.002', register: '0001',
-                    tanggal: '2026-09-15', jenis: 'Rutin', kegiatan: 'Service', status: 'Selesai', aduanId: null
-                }))
-            );
+            const [pemeliharaanList, setPemeliharaanList] = useState([]);
+               
 
-            const [pengadaanList, setPengadaanList] = useState([
-                { id: 1, noUsulan: 'PGD-2026-0001', tglUsul: '2026-09-01', namaBarang: 'PC Desktop Core i7', jumlah: 5, estimasiHarga: 12000000, peruntukan: 'Ruang IT', pengusul: 'Budi Santoso', keterangan: 'Kebutuhan upgrade server lokal' }
-            ]);
+            const [pengadaanList, setPengadaanList] = useState([]);
+                
             const [usulanHapus, setUsulanHapus] = useState([]);
 
             const handleNavigate = (page, params = null) => {
