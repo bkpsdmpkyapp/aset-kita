@@ -17,10 +17,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
 
     <style>
         @media print {
@@ -38,8 +37,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
- // PASTE-KAN CONFIG FIREBASE ANDA DI SINI
-       const firebaseConfig = {
+        const { useState, useEffect, useRef } = React;
+
+        // ==========================================
+        // INISIALISASI FIREBASE (GANTI DENGAN CONFIG ANDA)
+        // ==========================================
+        const firebaseConfig = {
   apiKey: "AIzaSyAd3hkGBk4zlncEPGN7Mm_pigF_C7yPBnA",
   authDomain: "aset-kita-db.firebaseapp.com",
   projectId: "aset-kita-db",
@@ -47,14 +50,12 @@
   messagingSenderId: "202167885902",
   appId: "1:202167885902:web:807249150c451823a8a31f"
 };
+
         
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-
-
-        const { useState, useEffect, useRef } = React;
 
         // ==========================================
         // 0. FUNGSI BANTU GLOBAL
@@ -182,10 +183,10 @@
         }
 
         // ==========================================
-        // 3. KOMPONEN DASHBOARD
+        // 3. KOMPONEN DASHBOARD (REALTIME)
         // ==========================================
         function Dashboard({ barangList, aduanList }) {
-            // Menghitung angka secara real-time dari array data
+            // Kalkulasi real-time
             const totalAktif = barangList.filter(b => b.status === 'Aktif').length;
             const totalBaik = barangList.filter(b => b.status === 'Aktif' && b.keadaan === 'Baik').length;
             const totalRR = barangList.filter(b => b.status === 'Aktif' && b.keadaan === 'Rusak Ringan').length;
@@ -203,13 +204,13 @@
                         type: 'bar',
                         data: {
                             labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-                            datasets: [{ label: 'Statistik Data Terinput', data: [0, 0, totalAktif, 0, 0, 0, 0], backgroundColor: '#0ea5e9', borderRadius: 4 }]
+                            datasets: [{ label: 'Statistik Barang', data: [0, 0, totalAktif, 0, 0, 0, 0], backgroundColor: '#0ea5e9', borderRadius: 4 }]
                         },
                         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
                     });
                 }
                 return () => { if (chartInstance.current) chartInstance.current.destroy(); };
-            }, [totalAktif]); // Grafik akan update jika total barang berubah
+            }, [totalAktif]);
 
             return (
                 <div>
@@ -222,7 +223,7 @@
                             <div className="bg-red-500 rounded-lg shadow p-6 text-white"><p className="text-sm font-medium uppercase opacity-80">Aduan Menunggu</p><p className="text-3xl font-bold mt-2">{tungguAduan}</p></div>
                         </div>
                         <div className="w-full lg:w-2/3 bg-white rounded-lg shadow p-6">
-                            <h3 className="text-lg font-semibold mb-4 text-gray-800">Grafik Aset Tersimpan</h3>
+                            <h3 className="text-lg font-semibold mb-4 text-gray-800">Grafik Aset (Otomatis)</h3>
                             <div className="h-80 w-full relative"><canvas ref={chartRef}></canvas></div>
                         </div>
                     </div>
@@ -500,23 +501,18 @@
                     const leftX = 14;
                     const rightX = pageWidth - 14;
 
-                    // Baris 1: Tanggal & Mengetahui
                     doc.text("Mengetahui,", leftX, finalY);
                     doc.text(`Palangka Raya, ${formatDateID(today)}`, rightX, finalY, { align: 'right' });
                     
-                    // Baris 2: Jabatan Pimpinan Kiri
                     finalY += 5;
                     const splitJabatanPimpinan = doc.splitTextToSize(appConfig.jabatanPimpinan, 85);
                     doc.text(splitJabatanPimpinan, leftX, finalY);
                     
-                    // Baris Jabatan Kanan (Penanggung Jawab dan Jabatan dirapatkan tanpa jeda berlebih)
                     doc.text("Penanggung Jawab", rightX, finalY, { align: 'right' });
                     doc.text(roomInfo.jabatan, rightX, finalY + 4, { align: 'right' });
 
-                    // Spasi Tanda Tangan
                     finalY += Math.max((splitJabatanPimpinan.length * 4), 10) + 14;
 
-                    // Baris Nama & NIP
                     doc.setFont("helvetica", "bold");
                     doc.text(appConfig.namaPimpinan, leftX, finalY);
                     doc.text(roomInfo.pj, rightX, finalY, { align: 'right' });
@@ -836,7 +832,7 @@
         }
 
         // ==========================================
-        // 8. KOMPONEN RUANGAN (DENGAN NIP PJ)
+        // 8. KOMPONEN RUANGAN
         // ==========================================
         function Ruangan({ ruanganList, setRuanganList, user }) {
             const [isFormMode, setIsFormMode] = useState(false);
@@ -848,7 +844,7 @@
                 if (editingId) {
                     setRuanganList(prev => prev.map(r => r.id === editingId ? { ...r, ...formData } : r));
                 } else {
-                    const newId = Math.max(...ruanganList.map(r => r.id)) + 1;
+                    const newId = ruanganList.length > 0 ? Math.max(...ruanganList.map(r => r.id)) + 1 : 1;
                     const newNo = `R-${String(newId).padStart(3, '0')}`;
                     setRuanganList(prev => [...prev, { id: newId, no: newNo, ...formData }]);
                 }
@@ -890,7 +886,7 @@
                         <table className="w-full text-left border-collapse">
                             <thead><tr className="bg-gray-100 text-sm"><th className="p-3 border-b">No Ruang</th><th className="p-3 border-b">Nama Ruangan</th><th className="p-3 border-b">Penanggung Jawab</th><th className="p-3 border-b">Jabatan</th><th className="p-3 border-b text-center">Aksi</th></tr></thead>
                             <tbody>
-                                {ruanganList.map((r) => (
+                                {ruanganList.length > 0 ? ruanganList.map((r) => (
                                     <tr key={r.id} className="border-b border-gray-100 text-sm hover:bg-gray-50">
                                         <td className="p-3 text-gray-600">{r.no}</td><td className="p-3 font-semibold text-gray-800">{r.nama}</td>
                                         <td className="p-3 text-gray-800 font-medium">{r.pj}<br/><span className="text-xs text-gray-500 font-normal">NIP: {r.nipPj || '-'}</span></td>
@@ -901,7 +897,7 @@
                                             )}
                                         </td>
                                     </tr>
-                                ))}
+                                )) : <tr><td colSpan="5" className="p-4 text-center text-gray-500">Belum ada data ruangan.</td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -1404,51 +1400,77 @@
         }
 
         // ==========================================
-        // 13. APP UTAMA
+        // 13. APP UTAMA - DENGAN SINKRONISASI FIREBASE
         // ==========================================
         function App() {
             const [user, setUser] = useState(null); 
             const [currentPage, setCurrentPage] = useState('dashboard');
             const [navParams, setNavParams] = useState(null);
+            
+            // State untuk menandakan sedang mengambil data dari Firebase
+            const [isLoadingData, setIsLoadingData] = useState(true);
 
-            const [appConfig, setAppConfig] = useState(() => {
-    const savedConfig = localStorage.getItem('asetKitaConfig');
-    return savedConfig ? JSON.parse(savedConfig) : {
-        appName: 'Nama Instansi Anda',
-        jabatanPimpinan: 'Kepala Dinas',
-        namaPimpinan: 'Nama Lengkap',
-        nipPimpinan: '1234567890',
-        systemPassphrase: 'admin',
-        autoBackup: true,
-        maintenanceMode: false
-    };
-});
-
-// Efek untuk menyimpan pengaturan ke memori browser setiap ada perubahan
-useEffect(() => {
-    localStorage.setItem('asetKitaConfig', JSON.stringify(appConfig));
-}, [appConfig]);
-
+            // STATE DATA (Semuanya dimulai dari keadaan KOSONG / DEFAULT)
+            const [appConfig, setAppConfig] = useState({
+                appName: '',
+                jabatanPimpinan: '',
+                namaPimpinan: '',
+                nipPimpinan: '',
+                systemPassphrase: 'admin123',
+                autoBackup: true,
+                maintenanceMode: false
+            });
             const [barangList, setBarangList] = useState([]);
-                
-
             const [ruanganList, setRuanganList] = useState([]);
-                
-
             const [aduanList, setAduanList] = useState([]);
-                
-
             const [pemeliharaanList, setPemeliharaanList] = useState([]);
-               
-
             const [pengadaanList, setPengadaanList] = useState([]);
-                
             const [usulanHapus, setUsulanHapus] = useState([]);
+
+            // EFEK 1: MENGAMBIL DATA DARI FIREBASE SAAT APLIKASI DIBUKA
+            useEffect(() => {
+                db.collection('AsetKitaDB').doc('DataUtama').get().then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (data.appConfig) setAppConfig(data.appConfig);
+                        if (data.barangList) setBarangList(data.barangList);
+                        if (data.ruanganList) setRuanganList(data.ruanganList);
+                        if (data.aduanList) setAduanList(data.aduanList);
+                        if (data.pemeliharaanList) setPemeliharaanList(data.pemeliharaanList);
+                        if (data.pengadaanList) setPengadaanList(data.pengadaanList);
+                        if (data.usulanHapus) setUsulanHapus(data.usulanHapus);
+                    }
+                    setIsLoadingData(false);
+                }).catch((error) => {
+                    console.error("Gagal menarik data Firebase:", error);
+                    setIsLoadingData(false); 
+                });
+            }, []);
+
+            // EFEK 2: MENYIMPAN KE FIREBASE SETIAP KALI ADA PERUBAHAN DATA
+            useEffect(() => {
+                if (!isLoadingData) {
+                    db.collection('AsetKitaDB').doc('DataUtama').set({
+                        appConfig, barangList, ruanganList, aduanList, pemeliharaanList, pengadaanList, usulanHapus
+                    }).catch(err => console.error("Gagal simpan ke Firebase:", err));
+                }
+            }, [appConfig, barangList, ruanganList, aduanList, pemeliharaanList, pengadaanList, usulanHapus, isLoadingData]);
 
             const handleNavigate = (page, params = null) => {
                 setCurrentPage(page);
                 setNavParams(params);
             };
+
+            // Tampilan Loading saat pertama kali buka web
+            if (isLoadingData) {
+                return (
+                    <div className="h-screen flex flex-col items-center justify-center bg-gray-50 text-blue-600">
+                        <svg className="w-12 h-12 animate-spin mb-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <h2 className="text-xl font-bold">Sinkronisasi Database Firebase...</h2>
+                        <p className="text-sm text-gray-500 mt-2">Menarik data aset, mohon tunggu.</p>
+                    </div>
+                );
+            }
 
             if (!user) return <Login onLogin={(userData) => { setUser(userData); handleNavigate('dashboard'); }} />;
 
